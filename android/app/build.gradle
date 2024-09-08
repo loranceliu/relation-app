@@ -76,13 +76,31 @@ android {
 
     namespace "com.relation"
     defaultConfig {
-        applicationId "com.relation"
+        applicationId System.getenv("APPLICATION_ID") ?: "com.relation"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode ((System.getenv("VERSION_CODE") ?: '1').toInteger())
+        versionName (System.getenv("VERSION_NAME") ?: '1.0.0')
     }
+
+    splits {
+        abi {
+            reset()
+            enable true
+            universalApk true  // If true, also generate a universal APK
+            include "arm64-v8a", "armeabi-v7a", "x86_64"
+        }
+    }
+
     signingConfigs {
+
+        config {
+            keyAlias 'Relation'
+            keyPassword 'A1304977218'
+            storeFile file('/Users/liu/Documents/tools/key/apk/config')
+            storePassword 'A1304977218'
+        }
+
         debug {
             storeFile file('debug.keystore')
             storePassword 'android'
@@ -97,9 +115,27 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.config
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+        }
+    }
+
+    flavorDimensions = ["env"]
+    productFlavors {
+        dev {
+            dimension "env"
+            resValue "string","app_name","测试版"
+        }
+
+        prod {
+            dimension "env"
+            resValue "string","app_name","生产版"
+        }
+
+        pub {
+            dimension "env"
+            applicationId "com.relation.app"
         }
     }
 }
@@ -108,6 +144,7 @@ dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
     implementation("com.facebook.react:flipper-integration")
+    implementation project(':react-native-splash-screen')
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

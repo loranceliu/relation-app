@@ -1,0 +1,1 @@
+export const PULL_USER_INFO = 'PULL_USER_INFO'
